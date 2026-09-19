@@ -1,59 +1,29 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>正在进入直播间</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>云播直播间</title>
   <style>
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      display: grid;
-      place-items: center;
-      color: #303133;
-      background: #f5f7fa;
-      font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    }
-    .status { text-align: center; }
-    .loading {
-      width: 30px;
-      height: 30px;
-      margin: 0 auto 14px;
-      border: 3px solid #dcdfe6;
-      border-top-color: #409eff;
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-    .error { color: #f56c6c; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    html, body, iframe { width: 100%; height: 100%; margin: 0; border: 0; }
+    body { overflow: hidden; background: #000; }
+    iframe { display: block; }
   </style>
 </head>
 <body>
-  <main class="status">
-    <div class="loading" id="loading"></div>
-    <div id="message">正在进入直播间…</div>
-  </main>
-
+  <iframe id="live-frame" title="直播间" allow="autoplay; fullscreen" allowfullscreen></iframe>
   <script>
     (function () {
-      var pathParts = window.location.pathname
-        .replace(/\/+$/, '')
-        .split('/')
-        .filter(Boolean);
-      var roomId = pathParts[pathParts.length - 1] || '';
+      var parts = location.pathname.replace(/\/+$/, '').split('/');
+      var roomId = parts[parts.length - 1];
 
       if (!/^\d+$/.test(roomId)) {
-        document.getElementById('loading').hidden = true;
-        var message = document.getElementById('message');
-        message.className = 'error';
-        message.textContent = '直播间地址不正确';
+        document.body.textContent = '直播间地址无效';
+        document.body.style.cssText = 'margin:0;display:grid;place-items:center;background:#111;color:#fff;font:16px sans-serif';
         return;
       }
 
-      window.location.replace(
-        'http://qv.blogdd.cn/live/' + encodeURIComponent(roomId)
-      );
+      document.getElementById('live-frame').src = 'https://qv.blogdd.cn/live/' + roomId;
     }());
   </script>
 </body>
