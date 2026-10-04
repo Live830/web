@@ -4,7 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="referrer" content="no-referrer">
-<title>云播直播间</title>
+<title>直播间</title>
+<meta name="description" content="进入直播间，观看精彩直播">
+<meta property="og:type" content="website">
+<meta property="og:title" content="直播间">
+<meta property="og:description" content="进入直播间，观看精彩直播">
+<meta property="og:image" content="https://live830.github.io/web/share-logo.png">
+<meta property="og:image:secure_url" content="https://live830.github.io/web/share-logo.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:url" content="https://live830.github.io/web/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="直播间">
+<meta name="twitter:image" content="https://live830.github.io/web/share-logo.png">
+<link rel="image_src" href="https://live830.github.io/web/share-logo.png">
 <style>
 html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
 #liveFrame{display:block;width:100%;height:100%;border:0;background:#000}
@@ -28,11 +40,30 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
   var target = new URL('https://zhibo.stmpsk.cn/live/' + roomId);
   var ticket = params.get('wx_ticket');
   if (ticket) target.searchParams.set('wx_ticket', ticket);
-  frame.src = target.toString();
+  var shareUrl = 'https://live830.github.io/web/live/' + roomId;
+  document.querySelector('meta[property="og:url"]').content = shareUrl;
+  function updateRoomTitle(title) {
+    if (typeof title !== 'string' || !title.trim()) return;
+    title = title.trim();
+    document.title = title;
+    frame.title = title;
+    document.querySelector('meta[property="og:title"]').content = title;
+    document.querySelector('meta[name="twitter:title"]').content = title;
+  }
   window.addEventListener('message', function (event) {
-    if (event.source !== frame.contentWindow || event.origin !== 'https://zhibo.stmpsk.cn' || !event.data || event.data.source !== 'yunbo-wechat-auth') return;
-    if (event.data.action === 'complete') history.replaceState(null, '', '/web/live/' + roomId);
+    if (event.source !== frame.contentWindow || event.origin !== target.origin || !event.data) return;
+    var data = event.data;
+    if (data.source === 'yunbo-live-meta' && String(data.room_id) === String(roomId)) {
+      updateRoomTitle(data.title);
+    }
+    if (data.source === 'yunbo-wechat-auth' && data.action === 'complete') {
+      history.replaceState(null, '', '/web/live/' + roomId);
+    }
   });
+  frame.addEventListener('load', function () {
+    frame.contentWindow.postMessage({source: 'yunbo-live-shell', action: 'request-meta', room_id: roomId}, target.origin);
+  });
+  frame.src = target.toString();
 })();
 </script>
 </body>
