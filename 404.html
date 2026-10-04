@@ -1,41 +1,39 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="referrer" content="no-referrer">
-  <title>云播直播间</title>
-  <style>
-    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
-    #liveFrame{display:block;width:100%;height:100%;border:0;background:#000}
-    .error{display:none;box-sizing:border-box;min-height:100%;padding:22vh 28px;color:#fff;text-align:center;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="referrer" content="no-referrer">
+<title>云播直播间</title>
+<style>
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
+#liveFrame{display:block;width:100%;height:100%;border:0;background:#000}
+.error{display:none;box-sizing:border-box;min-height:100%;padding:22vh 28px;color:#fff;text-align:center;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111}
+</style>
 </head>
 <body>
-  <iframe id="liveFrame" title="直播间" allow="autoplay; fullscreen" allowfullscreen></iframe>
-  <div id="error" class="error">直播间地址不正确</div>
-  <script>
-    (function () {
-      var match = location.pathname.match(/^\/web\/(\d+)\/?$/);
-      var params = new URLSearchParams(location.search);
-      var roomId = match ? match[1] : (params.get('room_id') || params.get('id') || '');
-      var frame = document.getElementById('liveFrame');
-      if (!/^\d+$/.test(roomId) || Number(roomId) < 1) {
-        frame.remove();
-        document.getElementById('error').style.display = 'block';
-        return;
-      }
-      var target = new URL('https://zhibo.stmpsk.cn/live/' + roomId);
-      var ticket = params.get('wx_ticket');
-      if (ticket) target.searchParams.set('wx_ticket', ticket);
-      frame.src = target.toString();
-      window.addEventListener('message', function (event) {
-        if (event.origin !== 'https://qv.blogdd.cn' || !event.data || event.data.source !== 'yunbo-wechat-auth') return;
-        if (event.data.action === 'complete') {
-          history.replaceState(null, '', '/web/' + roomId);
-        }
-      });
-    })();
-  </script>
+<iframe id="liveFrame" title="直播间" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<div id="error" class="error">直播间地址不正确</div>
+<script>
+(function () {
+  var match = location.pathname.match(/^\/web\/(?:live\/)?(\d+)\/?$/);
+  var params = new URLSearchParams(location.search);
+  var roomId = match ? match[1] : (params.get('room_id') || params.get('id') || '');
+  var frame = document.getElementById('liveFrame');
+  if (!/^\d+$/.test(roomId) || Number(roomId) < 1) {
+    frame.remove();
+    document.getElementById('error').style.display = 'block';
+    return;
+  }
+  var target = new URL('https://zhibo.stmpsk.cn/live/' + roomId);
+  var ticket = params.get('wx_ticket');
+  if (ticket) target.searchParams.set('wx_ticket', ticket);
+  frame.src = target.toString();
+  window.addEventListener('message', function (event) {
+    if (event.source !== frame.contentWindow || event.origin !== 'https://zhibo.stmpsk.cn' || !event.data || event.data.source !== 'yunbo-wechat-auth') return;
+    if (event.data.action === 'complete') history.replaceState(null, '', '/web/live/' + roomId);
+  });
+})();
+</script>
 </body>
 </html>
