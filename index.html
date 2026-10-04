@@ -30,7 +30,7 @@
       if (ticket) target.searchParams.set('wx_ticket', ticket);
       frame.src = target.toString();
       window.addEventListener('message', function (event) {
-        if (event.origin !== 'https://qv.blogdd.cn' || !event.data || event.data.source !== 'yunbo-wechat-auth') return;
+        if (event.origin !== 'https://zhibo.stmpsk.cn' || !event.data || event.data.source !== 'yunbo-wechat-auth') return;
         if (event.data.action === 'complete') {
           var clean = '/web/' + roomId;
           history.replaceState(null, '', clean);
