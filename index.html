@@ -53,6 +53,20 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
   window.addEventListener('message', function (event) {
     if (event.source !== frame.contentWindow || event.origin !== target.origin || !event.data) return;
     var data = event.data;
+    if(data.source==='yunbo-wechat-storage'&&String(data.room_id)===String(roomId)){
+      var authKey='yunbo_auth_zhibo_v1';
+      var tokenPattern=/^[A-Za-z0-9_-]{40,128}$/;
+      var savedToken='';
+      try{savedToken=localStorage.getItem(authKey)||'';}catch(error){}
+      if(data.action==='get'){
+        frame.contentWindow.postMessage({source:'yunbo-wechat-storage',action:'restored',request_id:data.request_id,token:tokenPattern.test(savedToken)?savedToken:''},target.origin);
+      }else if(data.action==='set'&&typeof data.token==='string'&&tokenPattern.test(data.token)){
+        try{localStorage.setItem(authKey,data.token);}catch(error){}
+      }else if(data.action==='clear'&&savedToken===data.token){
+        try{localStorage.removeItem(authKey);}catch(error){}
+      }
+      return;
+    }
     if (data.source === 'yunbo-live-meta' && String(data.room_id) === String(roomId)) {
       updateRoomTitle(data.title);
     }
