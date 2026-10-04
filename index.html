@@ -77,6 +77,17 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
   frame.addEventListener('load', function () {
     frame.contentWindow.postMessage({source: 'yunbo-live-shell', action: 'request-meta', room_id: roomId}, target.origin);
   });
+  function sendChatViewport() {
+    var vv=window.visualViewport;
+    var rect=frame.getBoundingClientRect();
+    var top=vv?vv.offsetTop:0;
+    var bottom=top+(vv?vv.height:window.innerHeight);
+    frame.contentWindow.postMessage({source:'yunbo-shell-viewport',room_id:roomId,top:Math.max(0,top-rect.top),bottom:Math.max(0,Math.min(rect.height,bottom-rect.top))},target.origin);
+  }
+  if(window.visualViewport){window.visualViewport.addEventListener('resize',sendChatViewport);window.visualViewport.addEventListener('scroll',sendChatViewport);}
+  window.addEventListener('resize',sendChatViewport);
+  frame.addEventListener('load',sendChatViewport);
+  window.addEventListener('message',function(event){if(event.source===frame.contentWindow&&event.origin===target.origin&&event.data&&event.data.source==='yunbo-chat-viewport'&&event.data.action==='request')sendChatViewport();});
   frame.src = target.toString();
 })();
 </script>
