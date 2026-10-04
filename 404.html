@@ -25,7 +25,7 @@
         document.getElementById('error').style.display = 'block';
         return;
       }
-      var target = new URL('https://qv.blogdd.cn/live/' + roomId);
+      var target = new URL('https://zhibo.stmpsk.cn/live/' + roomId);
       var ticket = params.get('wx_ticket');
       if (ticket) target.searchParams.set('wx_ticket', ticket);
       frame.src = target.toString();
