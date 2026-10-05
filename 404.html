@@ -18,10 +18,33 @@
 <meta name="twitter:image" content="https://live830.github.io/web/share-logo.png">
 <link rel="image_src" href="https://live830.github.io/web/share-logo.png">
 <style>
-html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
+html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;width:100%;height:100%;margin:0;overflow:hidden;background:#000}
 #liveFrame{display:block;width:100%;height:100%;border:0;background:#000}
 .error{display:none;box-sizing:border-box;min-height:100%;padding:22vh 28px;color:#fff;text-align:center;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111}
 </style>
+<script>
+/* Keep the compact live-room UI at its designed size in Android WeChat. */
+(function () {
+  'use strict';
+  if (!/MicroMessenger/i.test(navigator.userAgent) || !/Android/i.test(navigator.userAgent)) return;
+  var boundBridge = null;
+  function ready() {
+    var bridge = window.WeixinJSBridge;
+    if (!bridge || typeof bridge.invoke !== 'function') return;
+    function reset() {
+      try { bridge.invoke('setFontSizeCallback', { fontSize: 0 }); } catch (error) {}
+    }
+    reset();
+    if (boundBridge !== bridge && typeof bridge.on === 'function') {
+      boundBridge = bridge;
+      bridge.on('menu:setfont', reset);
+    }
+  }
+  document.addEventListener('WeixinJSBridgeReady', ready, false);
+  window.addEventListener('pageshow', ready, false);
+  ready();
+}());
+</script>
 </head>
 <body>
 <iframe id="liveFrame" title="直播间" allow="autoplay; fullscreen" allowfullscreen></iframe>
