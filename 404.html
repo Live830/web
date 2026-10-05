@@ -57,14 +57,14 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;width:100%;height:
   var frame = document.getElementById('liveFrame');
   if (params.has('proof_upload')) {
     var proofToken = location.hash.slice(1);
-    if (params.get('proof_upload') !== 'payment' || !/^[a-f0-9]{64}$/.test(proofToken)) {
+    if (!['payment','product'].includes(params.get('proof_upload')) || !/^[a-f0-9]{64}$/.test(proofToken)) {
       frame.remove();
       document.getElementById('error').textContent = '上传链接无效，请重新扫描电脑端二维码';
       document.getElementById('error').style.display = 'block';
       return;
     }
-    document.title = frame.title = '上传付款凭证';
-    frame.src = 'https://zhibo.stmpsk.cn/manual-proof-mobile.php#' + proofToken;
+    document.title = frame.title = params.get('proof_upload') === 'product' ? '上传商品图' : '上传付款凭证';
+    frame.src = 'https://zhibo.stmpsk.cn/manual-proof-mobile.php?purpose=' + params.get('proof_upload') + '#' + proofToken;
     return;
   }
   if (!/^\d+$/.test(roomId) || Number(roomId) < 1) {
