@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <title>直播间</title>
 <meta name="description" content="进入直播间，观看精彩直播">
@@ -23,26 +23,48 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;width:100%;height:
 .error{display:none;box-sizing:border-box;min-height:100%;padding:22vh 28px;color:#fff;text-align:center;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111}
 </style>
 <script>
-/* Keep the compact live-room UI at its designed size in Android WeChat. */
+/* Yunbo shell typography guard 20261007b: bounded retries, no polling. */
 (function () {
   'use strict';
   if (!/MicroMessenger/i.test(navigator.userAgent) || !/Android/i.test(navigator.userAgent)) return;
-  var boundBridge = null;
-  function ready() {
+  var boundBridge = null, active = false, timers = [], lastReset = 0;
+  function reset() {
+    if (document.hidden) return;
     var bridge = window.WeixinJSBridge;
     if (!bridge || typeof bridge.invoke !== 'function') return;
-    function reset() {
-      try { bridge.invoke('setFontSizeCallback', { fontSize: 0 }); } catch (error) {}
-    }
-    reset();
     if (boundBridge !== bridge && typeof bridge.on === 'function') {
       boundBridge = bridge;
-      bridge.on('menu:setfont', reset);
+      bridge.on('menu:setfont', schedule);
     }
+    if (Date.now() - lastReset < 250) return;
+    lastReset = Date.now();
+    try { bridge.invoke('setFontSizeCallback', { fontSize: 0 }, function () {}); } catch (error) {}
   }
-  document.addEventListener('WeixinJSBridgeReady', ready, false);
-  window.addEventListener('pageshow', ready, false);
-  ready();
+  function clear() {
+    timers.forEach(function (timer) { clearTimeout(timer); });
+    timers = []; active = false;
+  }
+  function schedule() {
+    if (document.hidden || active) return;
+    active = true;
+    reset();
+    [300, 1000, 2500, 5000].forEach(function (delay) { timers.push(setTimeout(reset, delay)); });
+    timers.push(setTimeout(function () { active = false; timers = []; }, 5300));
+  }
+  function bindFrame() {
+    var frame = document.getElementById('liveFrame');
+    if (frame) frame.addEventListener('load', schedule, false);
+    schedule();
+  }
+  document.addEventListener('WeixinJSBridgeReady', schedule, false);
+  document.addEventListener('DOMContentLoaded', bindFrame, false);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) clear(); else schedule(); }, false);
+  window.addEventListener('pageshow', schedule, false);
+  window.addEventListener('pagehide', clear, false);
+  window.addEventListener('focus', schedule, false);
+  window.addEventListener('orientationchange', schedule, false);
+  if (document.readyState !== 'loading') bindFrame();
+  schedule();
 }());
 </script>
 </head>
