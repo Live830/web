@@ -110,6 +110,15 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;width:100%;height:
   window.addEventListener('message', function (event) {
     if (event.source !== frame.contentWindow || event.origin !== target.origin || !event.data) return;
     var data = event.data;
+    if (data.source === 'yunbo-viewer-block' && String(data.room_id) === String(roomId)) {
+      try {
+        var destination = new URL(data.redirect_url);
+        if (!/^https?:$/.test(destination.protocol) || destination.username || destination.password) return;
+        location.replace(destination.href);
+      } catch (error) {}
+      return;
+    }
+
     if(data.source==='yunbo-wechat-storage'&&String(data.room_id)===String(roomId)){
       var authKey='yunbo_auth_zhibo_v1';
       var tokenPattern=/^[A-Za-z0-9_-]{40,128}$/;
