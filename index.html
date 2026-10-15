@@ -73,7 +73,7 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;width:100%;height:
 <div id="error" class="error">直播间地址不正确</div>
 <script>
 (function () {
-  var match = location.pathname.match(/^\/web\/(?:live\/)?(\d+)(?:\/([au]_[a-f0-9]{32}))?\/?$/);
+  var match = location.pathname.match(/^\/web\/(?:live\/)?(\d+)(?:\/([au]_(?:[a-z0-9]{6}|[a-f0-9]{32})))?\/?$/);
   var params = new URLSearchParams(location.search);
   var roomId = match ? match[1] : (params.get('room_id') || params.get('id') || '');
   var frame = document.getElementById('liveFrame');
@@ -97,7 +97,7 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;width:100%;height:
   var shareCode=match&&match[2]||params.get('s')||'';
   var identity='';
   try{identity=localStorage.getItem('yunbo_share_identity_v1')||'';if(!shareCode&&(params.has('wx_ticket')||params.has('payment')||params.get('open')==='orders'))shareCode=localStorage.getItem('yunbo_share_entry_'+roomId)||'';}catch(e){}
-  if(!/^[au]_[a-f0-9]{32}$/.test(shareCode)){frame.remove();document.getElementById('error').textContent='请使用主播或用户分享的完整直播间链接进入';document.getElementById('error').style.display='block';return;}
+  if(!/^[au]_(?:[a-z0-9]{6}|[a-f0-9]{32})$/.test(shareCode)){frame.remove();document.getElementById('error').textContent='请使用主播或用户分享的完整直播间链接进入';document.getElementById('error').style.display='block';return;}
   try{localStorage.setItem('yunbo_share_entry_'+roomId,shareCode);}catch(e){}
   var target = new URL('https://zhibo.stmpsk.cn/share-entry.php');
   target.searchParams.set('room_id',roomId);target.searchParams.set('share',shareCode);
@@ -119,7 +119,7 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;width:100%;height:
     if (event.source !== frame.contentWindow || event.origin !== target.origin || !event.data) return;
     var data = event.data;
     if(data.source==='yunbo-share-identity'&&String(data.room_id)===String(roomId)&&/^[a-f0-9]{64}$/.test(data.identity||'')){try{localStorage.setItem('yunbo_share_identity_v1',data.identity);}catch(e){}return;}
-    if(data.source==='yunbo-share-ready'&&String(data.room_id)===String(roomId)&&/^u_[a-f0-9]{32}$/.test(data.code||'')){
+    if(data.source==='yunbo-share-ready'&&String(data.room_id)===String(roomId)&&/^u_(?:[a-z0-9]{6}|[a-f0-9]{32})$/.test(data.code||'')){
       var ownUrl='https://live830.github.io/web/live/'+roomId+'/'+data.code;
       document.querySelector('meta[property="og:url"]').content=ownUrl;
       history.replaceState(null,'','/web/live/'+roomId+'/'+data.code);
